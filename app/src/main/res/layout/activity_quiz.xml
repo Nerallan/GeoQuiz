@@ -39,4 +39,11 @@
         android:drawablePadding="4dp"
         android:text="@string/next_button"/>
 
+    <TextView
+        android:id="@+id/next_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/next_text_view"
+        android:padding="24dp" />
+
 </LinearLayout>
