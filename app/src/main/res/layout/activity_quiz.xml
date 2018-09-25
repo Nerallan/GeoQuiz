@@ -31,13 +31,25 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/next_button"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableRight="@mipmap/arrow_right"
-        android:drawablePadding="4dp"
-        android:text="@string/next_button"/>
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/previous_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/previous_button"
+            android:src="@mipmap/arrow_left"/>
+
+        <ImageButton
+            android:id="@+id/next_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/next_button"
+            android:src="@mipmap/arrow_right"/>
+
+    </LinearLayout>
 
     <TextView
         android:id="@+id/next_text_view"
