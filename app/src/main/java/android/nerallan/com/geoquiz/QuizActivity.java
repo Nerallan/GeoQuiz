@@ -1,5 +1,6 @@
 package android.nerallan.com.geoquiz;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import static android.nerallan.com.geoquiz.CheatActivity.EXTRA_ANSWER_SHOWN;
 
 
 // AppCompatActivity subclass of Activity for old android versions support
@@ -28,9 +31,8 @@ public class QuizActivity extends AppCompatActivity {
     private ImageButton mPreviousButton;
     private TextView mQuestionTextView;
     private TextView mNextTextView;
+    private boolean mIsCheater;
     private int mCurrentIndex = 0;
-
-
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_oceans, true),
@@ -40,12 +42,18 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
 
-    // put extra data(right answer on question) in intent
+    // put extra data(right answer on question) in intent for child activity
     public static Intent newIntent(Context packageContext, boolean answerIsTrue){
         Intent i = new Intent(packageContext, CheatActivity.class);
         i.putExtra(EXTRA_ANSWER_IS_TRUE, answerIsTrue);
         return i;
     }
+
+
+    public static boolean wasAnswerShown(Intent result){
+        return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
+    }
+
 
     private void updateQuestion(){
         int question = mQuestionBank[mCurrentIndex].getTextResId();
@@ -58,13 +66,31 @@ public class QuizActivity extends AppCompatActivity {
 
         int messageResId = 0;
 
-        if (userPressedTrue == answerIsTrue){
-            messageResId = R.string.correct_toast;
+        if(mIsCheater){
+            messageResId = R.string.judgment_toast;
         } else {
-            messageResId = R.string.incorrect_toast;
+            if (userPressedTrue == answerIsTrue){
+                messageResId = R.string.correct_toast;
+            } else {
+                messageResId = R.string.incorrect_toast;
+            }
+        }
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK){
+            return;
         }
 
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+        if(requestCode == REQUEST_CODE_CHEAT){
+            if (data == null){
+                return;
+            }
+            mIsCheater = QuizActivity.wasAnswerShown(data);
+        }
     }
 
 
@@ -73,6 +99,7 @@ public class QuizActivity extends AppCompatActivity {
         super.onStart();
         Log.d(TAG, "onStart() called");
     }
+
 
     @Override
     protected void onPause() {
@@ -87,11 +114,13 @@ public class QuizActivity extends AppCompatActivity {
         Log.d(TAG, "onResume() called");
     }
 
+
     @Override
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "onStop() called");
     }
+
 
     @Override
     protected void onDestroy() {
@@ -160,6 +189,8 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                // clear value for next question
+                mIsCheater = false;
                 updateQuestion();
             }
         });
@@ -169,6 +200,8 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + mQuestionBank.length - 1) % mQuestionBank.length;
+                // clear value for next question
+                mIsCheater = false;
                 updateQuestion();
             }
         });
@@ -179,10 +212,13 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                // clear value for next question
+                mIsCheater = false;
                 updateQuestion();
             }
         });
     }
+
 
     // save mCurrentIndex state, put this variable in Bundle structure
     @Override

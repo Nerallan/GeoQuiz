@@ -1,5 +1,6 @@
 package android.nerallan.com.geoquiz;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -9,9 +10,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import static android.nerallan.com.geoquiz.QuizActivity.EXTRA_ANSWER_IS_TRUE;
+
 public class CheatActivity extends AppCompatActivity {
 
-    public static final String EXTRA_ANSWER_IS_TRUE = "android.nerallan.com.geoquiz.answer_is_true";
+    public static final String EXTRA_ANSWER_SHOWN = "android.nerallan.com.geoquiz.answer_shown";
 
     private boolean mAnswerIsTrue;
     private TextView mAnswerTextView;
@@ -23,6 +26,7 @@ public class CheatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cheat);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
 
         mAnswerIsTrue = getIntent().getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false);
 
@@ -37,6 +41,7 @@ public class CheatActivity extends AppCompatActivity {
                 } else {
                     mAnswerTextView.setText(R.string.false_button);
                 }
+                setAnswerShownResult(true);
             }
         });
 
@@ -48,6 +53,13 @@ public class CheatActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+    }
+
+    private void setAnswerShownResult(boolean isAnswerShown){
+        Intent data = new Intent();
+        data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
+        // send intent data with result code value back to QuizActivity
+        setResult(RESULT_OK, data);
     }
 
 }
