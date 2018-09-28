@@ -1,5 +1,7 @@
 package android.nerallan.com.geoquiz;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,16 +15,22 @@ import android.widget.Toast;
 // AppCompatActivity subclass of Activity for old android versions support
 public class QuizActivity extends AppCompatActivity {
 
+    public static final String EXTRA_ANSWER_IS_TRUE = "android.nerallan.com.geoquiz.answer_is_true";
+
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
     private Button mFalseButton;
+    private Button mCheatButton;
     private ImageButton mNextButton;
     private ImageButton mPreviousButton;
     private TextView mQuestionTextView;
     private TextView mNextTextView;
     private int mCurrentIndex = 0;
+
+
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_oceans, true),
@@ -32,6 +40,12 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_asia, true),
     };
 
+    // put extra data(right answer on question) in intent
+    public static Intent newIntent(Context packageContext, boolean answerIsTrue){
+        Intent i = new Intent(packageContext, CheatActivity.class);
+        i.putExtra(EXTRA_ANSWER_IS_TRUE, answerIsTrue);
+        return i;
+    }
 
     private void updateQuestion(){
         int question = mQuestionBank[mCurrentIndex].getTextResId();
@@ -96,6 +110,19 @@ public class QuizActivity extends AppCompatActivity {
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
 
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Start CheatActivity
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent i = QuizActivity.newIntent(QuizActivity.this, answerIsTrue);
+
+                // second param - int num which is passed to the child activity, and then received back by the parent
+                startActivityForResult(i, REQUEST_CODE_CHEAT);
+            }
+        });
+
         if(savedInstanceState != null){
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
         }
@@ -126,6 +153,8 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
+
+
         mNextButton = (ImageButton) findViewById(R.id.next_button);
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,6 +172,7 @@ public class QuizActivity extends AppCompatActivity {
                 updateQuestion();
             }
         });
+
 
         mNextTextView = (TextView) findViewById(R.id.next_text_view);
         mNextTextView.setOnClickListener(new View.OnClickListener() {
