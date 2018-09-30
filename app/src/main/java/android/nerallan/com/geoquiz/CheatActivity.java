@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,7 +17,11 @@ public class CheatActivity extends AppCompatActivity {
 
     public static final String EXTRA_ANSWER_SHOWN = "android.nerallan.com.geoquiz.answer_shown";
 
+    private static final String TAG = "CheatActivity";
+    private static final String KEY_ANSWER_SHOWN = "answer_shown";
+
     private boolean mAnswerIsTrue;
+    private boolean mIsAnswerShown;
     private TextView mAnswerTextView;
     private Button mShowAnswer;
 
@@ -32,6 +37,11 @@ public class CheatActivity extends AppCompatActivity {
 
         mAnswerTextView = (TextView) findViewById(R.id.answer_text_view);
 
+        // update flag value if activity orientation changed
+        if(savedInstanceState != null){
+            mIsAnswerShown = savedInstanceState.getBoolean(KEY_ANSWER_SHOWN, false);
+        }
+
         mShowAnswer = (Button) findViewById(R.id.show_answer_button);
         mShowAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,9 +51,12 @@ public class CheatActivity extends AppCompatActivity {
                 } else {
                     mAnswerTextView.setText(R.string.false_button);
                 }
-                setAnswerShownResult(true);
+
+                mIsAnswerShown = true;
+                setAnswerShownResult(mIsAnswerShown);
             }
         });
+        setAnswerShownResult(mIsAnswerShown);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -62,4 +75,10 @@ public class CheatActivity extends AppCompatActivity {
         setResult(RESULT_OK, data);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        Log.i(TAG, "onSaveInstanceState ");
+        savedInstanceState.putBoolean(KEY_ANSWER_SHOWN, mIsAnswerShown);
+    }
 }
