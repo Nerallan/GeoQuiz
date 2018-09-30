@@ -32,8 +32,8 @@ public class QuizActivity extends AppCompatActivity {
     private ImageButton mPreviousButton;
     private TextView mQuestionTextView;
     private TextView mNextTextView;
-    private boolean mIsCheater;
     private int mCurrentIndex = 0;
+
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_oceans, true),
@@ -42,6 +42,8 @@ public class QuizActivity extends AppCompatActivity {
             new Question(R.string.question_americas, true),
             new Question(R.string.question_asia, true),
     };
+
+    private boolean[] mIsCheater = new boolean[mQuestionBank.length];
 
     // put extra data(right answer on question) in intent for child activity
     public static Intent newIntent(Context packageContext, boolean answerIsTrue){
@@ -67,7 +69,7 @@ public class QuizActivity extends AppCompatActivity {
 
         int messageResId = 0;
 
-        if(mIsCheater){
+        if(mIsCheater[mCurrentIndex]){
             messageResId = R.string.judgment_toast;
         } else {
             if (userPressedTrue == answerIsTrue){
@@ -90,7 +92,7 @@ public class QuizActivity extends AppCompatActivity {
             if (data == null){
                 return;
             }
-            mIsCheater = QuizActivity.wasAnswerShown(data);
+            mIsCheater[mCurrentIndex] = QuizActivity.wasAnswerShown(data);
         }
     }
 
@@ -156,7 +158,7 @@ public class QuizActivity extends AppCompatActivity {
         // update saving variables from the last activity state
         if(savedInstanceState != null){
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
-            mIsCheater = savedInstanceState.getBoolean(KEY_CHEAT, false);
+            mIsCheater[mCurrentIndex] = savedInstanceState.getBoolean(KEY_CHEAT, false);
         }
         updateQuestion();
 
@@ -193,7 +195,7 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
                 // clear value for next question
-                mIsCheater = false;
+                mIsCheater[mCurrentIndex] = false;
                 updateQuestion();
             }
         });
@@ -204,7 +206,7 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + mQuestionBank.length - 1) % mQuestionBank.length;
                 // clear value for next question
-                mIsCheater = false;
+                mIsCheater[mCurrentIndex] = false;
                 updateQuestion();
             }
         });
@@ -216,7 +218,7 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View view) {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
                 // clear value for next question
-                mIsCheater = false;
+                mIsCheater[mCurrentIndex] = false;
                 updateQuestion();
             }
         });
@@ -229,6 +231,6 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
-        savedInstanceState.putBoolean(KEY_CHEAT, mIsCheater);
+        savedInstanceState.putBoolean(KEY_CHEAT, mIsCheater[mCurrentIndex]);
     }
 }
