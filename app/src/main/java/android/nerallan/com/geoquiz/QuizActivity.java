@@ -16,7 +16,7 @@ import static android.nerallan.com.geoquiz.CheatActivity.EXTRA_ANSWER_SHOWN;
 
 
 // AppCompatActivity subclass of Activity for old android versions support
-public class QuizActivity extends AppCompatActivity {
+public class QuizActivity extends AppCompatActivity implements View.OnClickListener{
 
     public static final String EXTRA_ANSWER_IS_TRUE = "android.nerallan.com.geoquiz.answer_is_true";
 
@@ -34,7 +34,6 @@ public class QuizActivity extends AppCompatActivity {
     private TextView mNextTextView;
     private int mCurrentIndex = 0;
 
-
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_oceans, true),
             new Question(R.string.question_mideast, false),
@@ -45,43 +44,54 @@ public class QuizActivity extends AppCompatActivity {
 
     private boolean[] mIsCheater = new boolean[mQuestionBank.length];
 
-    // put extra data(right answer on question) in intent for child activity
-    public static Intent newIntent(Context packageContext, boolean answerIsTrue){
-        Intent i = new Intent(packageContext, CheatActivity.class);
-        i.putExtra(EXTRA_ANSWER_IS_TRUE, answerIsTrue);
-        return i;
-    }
+    // called when an activity subclass instance is created
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate(Bundle) called");
+        // fills (inflates) layout and displays it on the screen.
+        setContentView(R.layout.activity_quiz);
 
+        mQuestionTextView = findViewById(R.id.question_text_view);
 
-    public static boolean wasAnswerShown(Intent result){
-        return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
-    }
-
-
-    private void updateQuestion(){
-        int question = mQuestionBank[mCurrentIndex].getTextResId();
-        mQuestionTextView.setText(question);
-    }
-
-
-    private void checkAnswer(boolean userPressedTrue){
-        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
-
-        int messageResId = 0;
-
-        if(mIsCheater[mCurrentIndex]){
-            messageResId = R.string.judgment_toast;
-        } else {
-            if (userPressedTrue == answerIsTrue){
-                messageResId = R.string.correct_toast;
-            } else {
-                messageResId = R.string.incorrect_toast;
-            }
+        // update saving variables from the last activity state
+        if(savedInstanceState != null){
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            mIsCheater[mCurrentIndex] = savedInstanceState.getBoolean(KEY_CHEAT, false);
         }
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+        updateQuestion();
+
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(this);
+
+        // getting links to filled View objects (widgets)
+        mTrueButton = (Button) findViewById(R.id.true_button);
+        mTrueButton.setOnClickListener(this);
+
+        mFalseButton = (Button) findViewById(R.id.false_button);
+        mFalseButton.setOnClickListener(this);
+
+        mNextButton = (ImageButton) findViewById(R.id.next_button);
+        mNextButton.setOnClickListener(this);
+
+        mPreviousButton = (ImageButton) findViewById(R.id.previous_button);
+        mPreviousButton.setOnClickListener(this);
+
+        // method setOnClickListener get listener(object) in argument that implements interface View.OnClickListener
+        // listener is implemented as an anonymous inner class
+        mNextTextView = (TextView) findViewById(R.id.next_text_view);
+        mNextTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                // clear value for next question
+                // mIsCheater[mCurrentIndex] = false;
+                updateQuestion();
+            }
+        });
     }
 
-
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK){
@@ -132,96 +142,40 @@ public class QuizActivity extends AppCompatActivity {
     }
 
 
-    // called when an activity subclass instance is created
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate(Bundle) called");
-        // fills (inflates) layout and displays it on the screen.
-        setContentView(R.layout.activity_quiz);
+    // put extra data(right answer on question) in intent for child activity
+    public static Intent newIntent(Context packageContext, boolean answerIsTrue){
+        Intent i = new Intent(packageContext, CheatActivity.class);
+        i.putExtra(EXTRA_ANSWER_IS_TRUE, answerIsTrue);
+        return i;
+    }
 
-        mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
 
-        mCheatButton = (Button) findViewById(R.id.cheat_button);
-        mCheatButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Start CheatActivity
-                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
-                Intent i = QuizActivity.newIntent(QuizActivity.this, answerIsTrue);
+    public static boolean wasAnswerShown(Intent result){
+        return result.getBooleanExtra(EXTRA_ANSWER_SHOWN, false);
+    }
 
-                // second param - int num which is passed to the child activity, and then received back by the parent
-                startActivityForResult(i, REQUEST_CODE_CHEAT);
+
+    private void updateQuestion(){
+        int question = mQuestionBank[mCurrentIndex].getTextResId();
+        mQuestionTextView.setText(question);
+    }
+
+
+    private void checkAnswer(boolean userPressedTrue){
+        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+
+        int messageResId = 0;
+
+        if(mIsCheater[mCurrentIndex]){
+            messageResId = R.string.judgment_toast;
+        } else {
+            if (userPressedTrue == answerIsTrue){
+                messageResId = R.string.correct_toast;
+            } else {
+                messageResId = R.string.incorrect_toast;
             }
-        });
-
-        // update saving variables from the last activity state
-        if(savedInstanceState != null){
-            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
-            mIsCheater[mCurrentIndex] = savedInstanceState.getBoolean(KEY_CHEAT, false);
         }
-        updateQuestion();
-
-        // getting links to filled View objects (widgets)
-        mTrueButton = (Button) findViewById(R.id.true_button);
-
-        // method setOnClickListener get listener(object) in argument that implements interface View.OnClickListener
-        // listener is implemented as an anonymous inner class
-        mTrueButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // A Context contains an instance of Activity (Activity is a subclass of Context)
-                // Toast class requires Context parameter to find and use a string resource identifier
-                // Toast.makeText(QuizActivity.this, R.string.correct_toast, Toast.LENGTH_SHORT).show();
-                checkAnswer(true);
-            }
-        });
-
-        mFalseButton = (Button) findViewById(R.id.false_button);
-        mFalseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // it's impossible to pass "this" in context argument, this denotes View.OnClickListener()
-                // Toast.makeText(QuizActivity.this, R.string.incorrect_toast, Toast.LENGTH_SHORT).show();
-                checkAnswer(false);
-            }
-        });
-
-
-
-        mNextButton = (ImageButton) findViewById(R.id.next_button);
-        mNextButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
-                // clear value for next question
-                mIsCheater[mCurrentIndex] = false;
-                updateQuestion();
-            }
-        });
-
-        mPreviousButton = (ImageButton) findViewById(R.id.previous_button);
-        mPreviousButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mCurrentIndex = (mCurrentIndex + mQuestionBank.length - 1) % mQuestionBank.length;
-                // clear value for next question
-                mIsCheater[mCurrentIndex] = false;
-                updateQuestion();
-            }
-        });
-
-
-        mNextTextView = (TextView) findViewById(R.id.next_text_view);
-        mNextTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
-                // clear value for next question
-                mIsCheater[mCurrentIndex] = false;
-                updateQuestion();
-            }
-        });
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -232,5 +186,46 @@ public class QuizActivity extends AppCompatActivity {
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
         savedInstanceState.putBoolean(KEY_CHEAT, mIsCheater[mCurrentIndex]);
+    }
+
+
+    // implement method for buttons listener
+    @Override
+    public void onClick(View pView) {
+        switch (pView.getId()){
+            case R.id.previous_button: {
+                mCurrentIndex = (mCurrentIndex + mQuestionBank.length - 1) % mQuestionBank.length;
+                updateQuestion();
+                break;
+            }
+            case R.id.next_button: {
+                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                updateQuestion();
+                break;
+            }
+            case R.id.true_button: {
+                // A Context contains an instance of Activity (Activity is a subclass of Context)
+                // Toast class requires Context parameter to find and use a string resource identifier
+                // Toast.makeText(QuizActivity.this, R.string.correct_toast, Toast.LENGTH_SHORT).show();
+                checkAnswer(true);
+                break;
+            }
+            case R.id.false_button: {
+                // it's impossible to pass "this" in context argument, this denotes View.OnClickListener()
+                // Toast.makeText(QuizActivity.this, R.string.incorrect_toast, Toast.LENGTH_SHORT).show();
+                checkAnswer(false);
+                break;
+            }
+            case R.id.cheat_button: {
+                // Start CheatActivity
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent i = QuizActivity.newIntent(QuizActivity.this, answerIsTrue);
+
+                // second param - int num which is passed to the child activity, and then received back by the parent
+                startActivityForResult(i, REQUEST_CODE_CHEAT);
+                break;
+            }
+
+        }
     }
 }

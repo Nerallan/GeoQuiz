@@ -38,7 +38,6 @@ public class CheatActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         mAnswerIsTrue = getIntent().getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false);
 
         mAnswerTextView = (TextView) findViewById(R.id.answer_text_view);
@@ -99,17 +98,16 @@ public class CheatActivity extends AppCompatActivity {
         });
     }
 
-    private void setAnswerShownResult(boolean isAnswerShown){
-        Intent data = new Intent();
-        data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
-        // send intent data with result code value back to QuizActivity
-        setResult(RESULT_OK, data);
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState ");
         savedInstanceState.putBoolean(KEY_ANSWER_SHOWN, mIsAnswerShown);
+    }
+
+    private void setAnswerShownResult(boolean isAnswerShown){
+        Intent data =  getIntent().putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
+        // send intent data with result code value back to QuizActivity
+        setResult(RESULT_OK, data);
     }
 }
